@@ -6,9 +6,9 @@ library(igraph)
 library(igraph)
 
 # Liest Node- und Edgelist ein
-el <- read.csv("edgegesamt.csv", header=T, as.is=T, sep = ",")
+el <- read.csv("https://github.com/HipHopNetzwerke/HipHop/blob/master/edgegesamt.csv", header=T, as.is=T, sep = ",")
 
-nodes <- read.csv("nodegesamt.csv", header=T, as.is=T, sep = ",")
+nodes <- read.csv("https://github.com/HipHopNetzwerke/HipHop/blob/master/nodegesamt.csv", header=T, as.is=T, sep = ",")
 
 # prüft, ob alle Variablen eingelesen wurden
 head(el)
