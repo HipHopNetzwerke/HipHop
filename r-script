@@ -1,0 +1,81 @@
+setwd("~/Desktop/Netzwerke Hip-Hop/Netzwerke Hip-Hop") 
+library(igraph)
+
+# igraph-Objekt erstellen
+
+library(igraph)
+
+# Liest Node- und Edgelist ein
+el <- read.csv("edgegesamt.csv", header=T, as.is=T, sep = ",")
+
+nodes <- read.csv("nodegesamt.csv", header=T, as.is=T, sep = ",")
+
+# prüft, ob alle Variablen eingelesen wurden
+head(el)
+head(nodes)
+
+# wandelt die edgelist in eine Matrix um und baut das igraph-Objekt
+elties <- as.matrix(el)
+rapgesamt <- graph_from_data_frame(d=elties, vertices=nodes, directed=FALSE)
+
+# ruft das finale igraph-Objekt auf.
+rapgesamt
+# wir verwenden nachfolgend für das igraph-Objekt "h".
+
+# VISUALISIERUNGSPARAMETER festlegen
+
+#Übersicht über die Edge- und Vertex-Attribute
+summary(rapgesamt)
+edge_attr(rapgesamt)
+vertex_attr(rapgesamt)
+
+# Die Werte sind alle numerisch gesetzt. Die Erklärung der Werte findet sich in der Codierung.
+
+
+# Im Netzwerk sind Künstler, Major- und Indielabels abgelegt, die über das Vertex.Attribut $type mit "1" (Indie), "2" (Künstler) oder "3" (Major) kodiert sind. Alle Major sollen nun mit der Farbe rot, alle Indies mit der Farbe lightgreen und alle Künstler mit der Farbe lightblue visualisiert werden.
+
+#FARBEN nach Vertex-Attributen definieren
+colrs <- c("lightgreen", "lightblue", "khaki")
+
+#definiert das Farbspektrum, der verwendeten Farben und legt diese in einem neuen Vector colrs fest. Da wir wissen, dass wir bei §type nur drei Werte haben (Indie, Künstler, Label) brauchen wir auch zwei Werte. Die direkten Farbpaletten sind hier hinterlegt: http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf.
+
+V(rapgesamt)$color <- colrs[V(rapgesamt)$type]
+
+# definiert, dass die Labels als Kreis und Künstler als Quadrat angezeigt werden
+V(rapgesamt)$shape = "square"
+major <- V(rapgesamt)[type == "3"]
+V(rapgesamt)[major]$shape = "circle"
+indi <- V(rapgesamt)[type == "1"]
+V(rapgesamt)[indi]$shape = "circle"
+
+# Cliquen automatisch bilden
+# Community detection based on label propagation:
+clp <- cluster_label_prop(rapgesamt)
+class(clp)
+
+# Cliquen ihre Mitglieder zuordnen
+# We can also plot the communities without relying on their built-in plot:
+V(rapgesamt)$community <- clp$membership
+
+
+# weist dem Vertex-Attribut color die Funktion colrs zu, die wir vorher mit drei Farben definiert haben.
+
+plot(clp, rapgesamt,
+     vertex.color=colrs[V(rapgesamt)$community],
+     edge.arrow.size=.6, 
+     vertex.size=degree(rapgesamt)*1.5, 
+     vertex.frame.color="white", 
+     edge.curved=.1, 
+     vertex.label.dist=0, 
+     vertex.label.degree=0, 
+     vertex.label.cex=.4, 
+     vertex.label.family="Helvetica", 
+     vertex.label.font=2, 
+     vertex.label.color="black", 
+     layout=layout_nicely,
+     main="Die Deutsche Hip-Hop-Szene",
+     preventoverlap=TRUE, 
+     symmetry=TRUE, 
+     uniformedgelength=TRUE, 
+     minimizeedgecrossig=TRUE, 
+     rescale=FALSE)
