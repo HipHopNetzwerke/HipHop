@@ -1,6 +1,3 @@
-setwd("~/Desktop/Netzwerke Hip-Hop/Netzwerke Hip-Hop") 
-library(igraph)
-
 # igraph-Objekt erstellen
 
 library(igraph)
