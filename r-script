@@ -1,78 +1,50 @@
-# igraph-Objekt erstellen
+# 226305 Test Dateset
+# sandhu@hdm-stuttgart.de, 2018-05-7
+# Test HipHop-Power
+# https://github.com/hdm-crpr/226305/tree/master/datasets/hiphop
 
 library(igraph)
-
-# Liest Node- und Edgelist ein
-el <- read.csv("https://github.com/HipHopNetzwerke/HipHop/blob/master/edgegesamt.csv", header=T, as.is=T, sep = ",")
-
-nodes <- read.csv("https://github.com/HipHopNetzwerke/HipHop/blob/master/nodegesamt.csv", header=T, as.is=T, sep = ",")
-
-# prüft, ob alle Variablen eingelesen wurden
+el <- read.csv("https://raw.githubusercontent.com/hdm-crpr/226305/master/datasets/hiphop/edges.csv", header=T, as.is=T, sep = ",", stringsAsFactors = FALSE)
 head(el)
+
+nodes <- read.csv("https://raw.githubusercontent.com/hdm-crpr/226305/master/datasets/hiphop/nodes_power.csv", header=T, as.is=T, sep = ";", stringsAsFactors = FALSE)
+
 head(nodes)
-
-# wandelt die edgelist in eine Matrix um und baut das igraph-Objekt
 elties <- as.matrix(el)
-rapgesamt <- graph_from_data_frame(d=elties, vertices=nodes, directed=FALSE)
+elties
 
-# ruft das finale igraph-Objekt auf.
-rapgesamt
-# wir verwenden nachfolgend für das igraph-Objekt "h".
+# ipgraph-Objekt erstellt
+power <- graph_from_data_frame(d=elties, vertices=nodes, directed=FALSE)
+power
+class(power)
 
-# VISUALISIERUNGSPARAMETER festlegen
+plot(power, vertex.label=NA)
 
-#Übersicht über die Edge- und Vertex-Attribute
-summary(rapgesamt)
-edge_attr(rapgesamt)
-vertex_attr(rapgesamt)
+# Vertex-Attribute anzeigen
+vertex_attr(power)
 
-# Die Werte sind alle numerisch gesetzt. Die Erklärung der Werte findet sich in der Codierung.
+# Edge-Attribute
+E(power)$arrow.size = .5
+E(power)$color="black"
+E(power)$curved=.1
 
+# Vertex-Attribute
 
-# Im Netzwerk sind Künstler, Major- und Indielabels abgelegt, die über das Vertex.Attribut $type mit "1" (Indie), "2" (Künstler) oder "3" (Major) kodiert sind. Alle Major sollen nun mit der Farbe rot, alle Indies mit der Farbe lightgreen und alle Künstler mit der Farbe lightblue visualisiert werden.
+V(power)$label.dist=2
+V(power)$label.degree=0
+V(power)$label.cex=.5
+V(power)$label.family="Helvetica"
+V(power)$label.font=2
+V(power)$label.color="black"
+V(power)$frame.color="white"
 
-#FARBEN nach Vertex-Attributen definieren
-colrs <- c("lightgreen", "lightblue", "khaki")
+plot(power)
 
-#definiert das Farbspektrum, der verwendeten Farben und legt diese in einem neuen Vector colrs fest. Da wir wissen, dass wir bei §type nur drei Werte haben (Indie, Künstler, Label) brauchen wir auch zwei Werte. Die direkten Farbpaletten sind hier hinterlegt: http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf.
+# Vertex-Attribut size als power definieren
+plot(power, layout = layout_nicely, vertex.size=V(power)$power/40, main="HipHop nach Power")
 
-V(rapgesamt)$color <- colrs[V(rapgesamt)$type]
-
-# definiert, dass die Labels als Kreis und Künstler als Quadrat angezeigt werden
-V(rapgesamt)$shape = "square"
-major <- V(rapgesamt)[type == "3"]
-V(rapgesamt)[major]$shape = "circle"
-indi <- V(rapgesamt)[type == "1"]
-V(rapgesamt)[indi]$shape = "circle"
-
-# Cliquen automatisch bilden
-# Community detection based on label propagation:
-clp <- cluster_label_prop(rapgesamt)
-class(clp)
-
-# Cliquen ihre Mitglieder zuordnen
-# We can also plot the communities without relying on their built-in plot:
-V(rapgesamt)$community <- clp$membership
+# Sie müssten hier noch etwas mit dem Divisor von Power spielen, da die Werte von 2 bis 2000 reichen. Wenn Sie hier eine bessere Aussage treffen wollen, empfehle ich eine Indizierung der Werte, d.h. sie legen eine Range an, in der Sie die Werte zuordnen, also z.B. 1 = unter 50, 2 = unter 100, 3 = unter 250, 4 = unter 500, 6 = unter 1.000 etc. dann werden so starke Ausreisser vermieden.
 
 
-# weist dem Vertex-Attribut color die Funktion colrs zu, die wir vorher mit drei Farben definiert haben.
 
-plot(clp, rapgesamt,
-     vertex.color=colrs[V(rapgesamt)$community],
-     edge.arrow.size=.6, 
-     vertex.size=degree(rapgesamt)*1.5, 
-     vertex.frame.color="white", 
-     edge.curved=.1, 
-     vertex.label.dist=0, 
-     vertex.label.degree=0, 
-     vertex.label.cex=.4, 
-     vertex.label.family="Helvetica", 
-     vertex.label.font=2, 
-     vertex.label.color="black", 
-     layout=layout_nicely,
-     main="Die Deutsche Hip-Hop-Szene",
-     preventoverlap=TRUE, 
-     symmetry=TRUE, 
-     uniformedgelength=TRUE, 
-     minimizeedgecrossig=TRUE, 
-     rescale=FALSE)
+
