@@ -1,4 +1,4 @@
-from,to,relationship,time,position
+,to,relationship,time,position
 four,sony,2,2005,NA
 bush,aggr,1,2001,1
 bush,ersg,1,2004,1
@@ -254,3 +254,10 @@ pete,down,1,2008,NA
 koen,yoma,1,1995,NA
 bjoe,yoma,1,1995,NA
 dokt,yoma,1,1995,NA
+mate,univ,1,2004,2
+john,univ,1,2004,2
+donc,univ,1,2004,2
+chin,univ,1,2004,2
+lafr,univ,1,2004,2
+lars,univ,1,2004,2
+mrre,univ,1,2004,2
