@@ -1,13 +1,11 @@
-setwd("~/Desktop/Netzwerke Hip-Hop/Netzwerke Hip-Hop") # je nachdem, wo ihr eure Listen abgelegt habt
-
 # igraph-Objekt erstellen
 
 library(igraph)
 
 # Liest Node- und Edgelist von Github ein
-el <- read.csv("https://github.com/HipHopNetzwerke/HipHop/blob/master/edgegesamt.csv", header=T, as.is=T, sep = ",", stringsAsFactors = FALSE)
+el <- read.csv("https://raw.githubusercontent.com/HipHopNetzwerke/HipHop/master/edgegesamt.csv", header=T, as.is=T, sep = ",", stringsAsFactors = FALSE)
 
-nodes <- read.csv("https://github.com/HipHopNetzwerke/HipHop/blob/master/nodegesamt.csv", header=T, as.is=T, sep = ",", stringsAsFactors = FALSE)
+nodes <- read.csv("https://raw.githubusercontent.com/HipHopNetzwerke/HipHop/master/nodegesamt.csv", header=T, as.is=T, sep = ",", stringsAsFactors = FALSE)
 
 
 # prüft, ob alle Variablen eingelesen wurden
@@ -71,12 +69,21 @@ plot(clp, rapgesamt,
      vertex.label.color="black", 
      layout=layout_nicely(rapgesamt, dim=2),
      vertex.size=V(rapgesamt)$power/40,
-     main="Die Deutsche Hip-Hop-Szene", preventoverlap=TRUE,uniformedlength=TRUE,
+     main="Die Deutsche Hip-Hop-Szene", 
+     preventoverlap=TRUE,
+     uniformedlength=TRUE,
      minimizeedgecrossig=TRUE, rescale=TRUE)
 
 #hier zerschießt R wieder die Cluster und die Größensortierung nach Power, die gerade noch im Plot funktioniert haben...
 
 library(visNetwork)
-visNetwork
+visNetwork(nodes, el)
 visIgraph(rapgesamt, layout = "layout_nicely", physics = TRUE, smooth = TRUE) %>%
   visInteraction(navigationButtons = TRUE)
+  
+
+#der Befehl für den Vektor nach Power könnte so aussehen, das Netzwerk sieht aber auch kacke aus (erstmal ignorieren):
+V(rapgesamt)$size <- V(rapgesamt)$power
+
+plot(rapgesamt, layout=layout_nicely(rapgesamt, dim = 2))
+
