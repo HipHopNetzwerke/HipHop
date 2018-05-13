@@ -47,6 +47,45 @@ V(rapgesamt)[major]$shape = "circle"
 indi <- V(rapgesamt)[type == "1"]
 V(rapgesamt)[indi]$shape = "circle"
 
+#Wie viele Componenten hat das Netzwerk?
+  components(rapgesamt)
+is_connected(rapgesamt)
+#Welchen Durchmesser hat das Netzwerk?
+  diameter(rapgesamt)
+#Wie ist die Dichte des Netzwerks?
+  edge_density(rapgesamt)
+#Wie ist die Pfad-Distanz im Netzwerk?
+  mean_distance(rapgesamt)
+#Wie viele Cluster hat das Netzwerk?
+  cluster_walktrap(rapgesamt)
+
+# Der erste Plot: alles ist richtig (Farben, Formen, Größen), nur leider erkennt man viele Namen nicht mehr. 
+  # Kann man die Darstellung nicht einfach entzerren?
+  
+plot(rapgesamt,
+     edge.arrow.size=.6, 
+     vertex.frame.color="white", 
+     edge.curved=.1, 
+     vertex.label.dist=0, 
+     vertex.label.degree=0, 
+     vertex.label.cex=.4, 
+     vertex.label.family="Helvetica", 
+     vertex.label.font=2, 
+     vertex.label.color="black", 
+     vertex.size=V(rapgesamt)$power/40,
+     preventoverlap=TRUE,
+     uniformedlength=FALSE,
+     minimizeedgecrossig=TRUE, 
+     rescale=TRUE,
+     main="Die Deutsche Hip-Hop-Szene",
+     layout=layout_with_fr(rapgesamt))
+
+
+legend(x=-3, y=-1.1, c("Indipendent-Labels","Rapper", "Major-Labels"), pch=21,
+       col="#777777", pt.bg=colrs, pt.cex=2, cex=.8, bty="n", ncol=1)
+
+# Das Netzwerk mit Cliquen (die Farben der Knoten verändern sich dabei leider auch irgendwie)
+
 # Cliquen automatisch bilden
 # Community detection based on label propagation:
 clp <- cluster_label_prop(rapgesamt)
@@ -56,8 +95,57 @@ class(clp)
 # We can also plot the communities without relying on their built-in plot:
 V(rapgesamt)$community <- clp$membership
 
+# der zweite Plot, diesmal mit Cliquen: Ist nicht unbedingt notwendig für uns, zeigt aber noch besser die Zusammenhänge innerhalb des Netzwerks
+# Leider nicht besser lesbar als der erste Plot
+
 plot(clp, rapgesamt,
-     vertex.color=colrs[V(rapgesamt)$community],
+     edge.arrow.size=.6, 
+     vertex.frame.color="white", 
+     edge.curved=.1, 
+     vertex.label.dist=0, 
+     vertex.label.degree=0, 
+     vertex.label.cex=.4, 
+     vertex.label.family="Helvetica", 
+     vertex.label.font=2, 
+     vertex.label.color="black", 
+     vertex.size=V(rapgesamt)$power/40,
+     preventoverlap=TRUE,
+     uniformedlength=FALSE,
+     minimizeedgecrossig=TRUE, 
+     rescale=TRUE,
+     main="Die Deutsche Hip-Hop-Szene",
+     layout=layout_with_fr(rapgesamt))
+
+# Der Versuch, unser Netzwerk mit visIgraph zu visualisieren (übersichtlich, aber durch die falschen Größen verwirrend)
+#hier zerschießt R wieder die Größensortierung nach Power, die gerade noch im Plot funktioniert haben... Warum?
+visIgraph(rapgesamt, layout = "layout_nicely", physics = TRUE, smooth = TRUE) %>%
+  visInteraction(navigationButtons = TRUE)
+
+# Der Versuch, unser Netzwerk mit visNetwork zu visualisieren (unüberischtlich und komischerweise ohne Edges, aber gute Filtermöglichkeit)
+# hier haben wir die Möglichkeit, das Netzwerk nach Typ sortieren zu lassen (Wo sind die Edges hin?)
+library(visNetwork)
+nodes$shape <- "dot"  
+nodes$shadow <- TRUE # Nodes will drop shadow
+nodes$title <- nodes$name # Text on click
+nodes$label <- nodes$name # Node label
+nodes$size <- nodes$power # Node size
+nodes$borderWidth <- 2 # Node border width
+nodes$color.background <- c("lightgreen", "lightblue", "khaki")[nodes$type]
+nodes$color.border <- "black"
+nodes$color.highlight.background <- "orange"
+nodes$color.highlight.border <- "black"
+el$width <- 1+el$time/8
+
+visNetwork(nodes, el, width = "100%", height = "500px", main="Die deutsche Hip-Hop-Szene") %>%
+  visOptions(highlightNearest = TRUE, 
+           selectedBy = "type")
+ 
+# wir können ein Teilnetzwerk bilden, in dem nur die Labels angezeigt werden
+# komischerweise werden einige Major-Label nicht mehr in der richtigen Farbe dargestellt
+ohne_rapper <- delete_vertices(rapgesamt, V(rapgesamt)[type == 2])
+ohne_rapper
+plot(ohne_rapper,
+     edge.arrow.size=.1, 
      edge.arrow.size=.6, 
      vertex.frame.color="white", 
      edge.curved=.1, 
@@ -68,22 +156,42 @@ plot(clp, rapgesamt,
      vertex.label.font=2, 
      vertex.label.color="black", 
      layout=layout_nicely(rapgesamt, dim=2),
-     vertex.size=V(rapgesamt)$power/40,
-     main="Die Deutsche Hip-Hop-Szene", 
-     preventoverlap=TRUE,
-     uniformedlength=TRUE,
-     minimizeedgecrossig=TRUE, rescale=TRUE)
+     vertex.size=V(rapgesamt)$power/20,
+     main="Die erfolgreichsten Labels")
 
-#hier zerschießt R wieder die Cluster und die Größensortierung nach Power, die gerade noch im Plot funktioniert haben...
-
+#sieht besser aus, aber mal wieder ohne Power
 library(visNetwork)
 visNetwork(nodes, el)
-visIgraph(rapgesamt, layout = "layout_nicely", physics = TRUE, smooth = TRUE) %>%
+visIgraph(ohne_rapper, layout = "layout_nicely", physics = TRUE, smooth = TRUE) %>%
   visInteraction(navigationButtons = TRUE)
-  
 
-#der Befehl für den Vektor nach Power könnte so aussehen, das Netzwerk sieht aber auch kacke aus (erstmal ignorieren):
-V(rapgesamt)$size <- V(rapgesamt)$power
+#wir können auch ein Teilnetzwerk bilden, in dem nur die Rapper angezeigt werden
+#warum wird Soulfood als einziges Label trotzdem angezeigt???
+ohne_labels <- delete_vertices(rapgesamt, V(rapgesamt)[type == 1,3])
+ohne_labels
 
-plot(rapgesamt, layout=layout_nicely(rapgesamt, dim = 2))
+plot(ohne_labels,
+     edge.arrow.size=.1, 
+     edge.arrow.size=.6, 
+     vertex.frame.color="white", 
+     edge.curved=.1, 
+     vertex.label.dist=0, 
+     vertex.label.degree=0, 
+     vertex.label.cex=.4, 
+     vertex.label.family="Helvetica", 
+     vertex.label.font=2, 
+     vertex.label.color="black", 
+     layout=layout_nicely(rapgesamt, dim=2),
+     vertex.size=V(rapgesamt)$power/20,
+     main="Die erfolgreichsten Rapper")
 
+
+#ein Teilnetzwerk, dass nur die Rapper zeigt, die gleichzeitig Labelbosse sind --> Warum funktioniert das nicht?
+# (in der Edgelist als in der Spalte "position" als 1 gekennzeichnet)
+list.edge.attributes(rapgesamt)
+subgraph.edges(rapgesamt) # Funktion
+E(rapgesamt)["position" == 1] # Selektion des Attributs
+boss <- subgraph.edges(rapgesamt, E(rapgesamt)["position" == 1])
+plot(boss, edge.arrow.size=.1, layout = layout_nicely, main="Rapper als Label-Bosse")
+
+# Vielen Dank für Ihre Hilfe!
