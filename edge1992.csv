@@ -1,0 +1,7 @@
+from,to,relationship,time,position
+mich,sony,1,1992,2
+thom,sony,1,1992,2
+smud,sony,1,1992,2
+mich,smud,3,1992,NA
+mich,thom,3,1992,NA
+smud,thom,3,1992,NA
