@@ -1,0 +1,83 @@
+library(igraph)
+
+# Liest Node- und Edgelist ein
+el <- read.csv("https://github.com/HipHopNetzwerke/HipHop/blob/master/edge2010.csv", header=T, as.is=T, sep = ",")
+
+nodes <- read.csv("https://raw.githubusercontent.com/HipHopNetzwerke/HipHop/master/Node2010.csv", header=T, as.is=T, sep = ",")
+
+# prüft, ob alle Variablen eingelesen wurden
+head(el)
+head(nodes)
+
+elties <- as.matrix(el)
+rap2010 <- graph_from_data_frame(d=el, vertices=nodes, directed=FALSE)
+
+rap2010
+
+# wir verwenden nachfolgend für das igraph-Objekt "h".
+
+# VISUALISIERUNGSPARAMETER festlegen
+
+#Übersicht über die Edge- und Vertex-Attribute
+summary(rap2010)
+edge_attr(rap2010)
+vertex_attr(rap2010)
+
+# Im Netzwerk sind Künstler, Major- und Indielabels abgelegt, die über das Vertex.Attribut $type mit "1" (Indie), "2" (Künstler) oder "3" (Major) kodiert sind. Alle Major sollen nun mit der Farbe rot, alle Indies mit der Farbe lightgreen und alle Künstler mit der Farbe lightblue visualisiert werden.
+
+#FARBEN nach Vertex-Attributen definieren
+colrs <- c("lightgreen", "lightblue", "khaki")
+
+#definiert das Farbspektrum, der verwendeten Farben und legt diese in einem neuen Vector colrs fest. Da wir wissen, dass wir bei §type nur drei Werte haben (Indie, Künstler, Label) brauchen wir auch zwei Werte. Die direkten Farbpaletten sind hier hinterlegt: http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf.
+
+V(rap2010)$color <- colrs[V(rap2010)$type]
+
+# definiert, dass die Labels als Kreis und Künstler als Quadrat angezeigt werden
+V(rap2010)$shape = "square"
+major <- V(rap2010)[type == "3"]
+V(rap2010)[major]$shape = "circle"
+indi <- V(rap2010)[type == "1"]
+V(rap2010)[indi]$shape = "circle"
+
+#Wie viele Componenten hat das Netzwerk?
+components(rap2010)
+is_connected(rap2010)
+#Welchen Durchmesser hat das Netzwerk?
+diameter(rap2010)
+#Wie ist die Dichte des Netzwerks?
+edge_density(rap2010)
+#Wie ist die Pfad-Distanz im Netzwerk?
+mean_distance(rap2010)
+#Wie viele Cluster hat das Netzwerk?
+cluster_walktrap(rap2010)
+
+V(rap2010)$size=(rap2010)$power
+
+plot(rap2010,
+     edge.arrow.size=.6, 
+     vertex.frame.color="white", 
+     edge.curved=.1, 
+     vertex.label.dist=0, 
+     vertex.label.degree=0, 
+     vertex.label.cex=.4, 
+     vertex.label.family="Helvetica", 
+     vertex.label.font=2, 
+     vertex.label.color="black", 
+     vertex.size=V(rap2010)$power/17,
+     preventoverlap=TRUE,
+     uniformedlength=FALSE,
+     minimizeedgecrossig=TRUE, 
+     rescale=TRUE,
+     main="Die Deutsche Hip-Hop-Szene bis 2010",
+     layout=layout_with_fr(rap2010))
+
+
+legend(x=-2, y=-1.1, c("Indipendent-Labels","Rapper", "Major-Labels"), pch=21,
+       col="#777777", pt.bg=colrs, pt.cex=2, cex=.8, bty="n", ncol=1)
+
+library(visNetwork)
+visIgraph(rap2010, layout = "layout_nicely", physics = TRUE, smooth = TRUE, type = "full") %>%
+            visInteraction(navigationButtons = TRUE) %>%
+  visInteraction(navigationButtons = TRUE)
+
+
