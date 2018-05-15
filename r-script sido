@@ -1,0 +1,92 @@
+library(igraph)
+
+# igraph-Objekt erstellen
+
+library(igraph)
+
+# Liest Node- und Edgelist ein
+el <- read.csv("https://raw.githubusercontent.com/HipHopNetzwerke/HipHop/master/sidoedge.csv", header=T, as.is=T, sep = ",")
+
+nodes <- read.csv("https://raw.githubusercontent.com/HipHopNetzwerke/HipHop/master/sidonode.csv", header=T, as.is=T, sep = ",")
+
+# prüft, ob alle Variablen eingelesen wurden
+head(el)
+head(nodes)
+
+# wandelt die edgelist in eine Matrix um und baut das igraph-Objekt
+elties <- as.matrix(el)
+sidoego <- graph_from_data_frame(d=elties, vertices=nodes, directed=FALSE)
+
+# ruft das finale igraph-Objekt auf.
+sidoego
+# wir verwenden nachfolgend für das igraph-Objekt "h".
+
+# VISUALISIERUNGSPARAMETER festlegen
+
+#Übersicht über die Edge- und Vertex-Attribute
+summary(sidoego)
+edge_attr(sidoego)
+vertex_attr(sidoego)
+
+# Die Werte sind alle numerisch gesetzt. Die Erklärung der Werte findet sich in der Codierung.
+
+
+# Im Netzwerk sind Künstler, Major- und Indielabels abgelegt, die über das Vertex.Attribut $type mit "1" (Indie), "2" (Künstler) oder "3" (Major) kodiert sind. Alle Major sollen nun mit der Farbe rot, alle Indies mit der Farbe lightgreen und alle Künstler mit der Farbe lightblue visualisiert werden.
+nodes$color.background <- c("lightgreen", "lightblue", "khaki")[nodes$type]
+nodes$color.border <- "black"
+
+#FARBEN nach Vertex-Attributen definieren
+colrs <- c("lightblue", "lightgreen", "khaki")
+#definiert das Farbspektrum, der verwendeten Farben und legt diese in einem neuen Vector colrs fest. Da wir wissen, dass wir bei §type nur drei Werte haben (Indie, Künstler, Label) brauchen wir auch zwei Werte. Die direkten Farbpaletten sind hier hinterlegt: http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf.
+V(sidoego)$color <- colrs[V(sidoego)$type]
+V(sidoego)$size=degree(sidoego)*5
+# weist dem Vertex-Attribut color die Funktion colrs zu, die wir vorher mit drei Farben definiert haben.
+plot(sidoego)
+
+plot(sidoego, vertex.frame.color="white", vertex.label.dist=.2, edge.curved=.1, vertex.label.degree=2, vertex.label.cex=1, vertex.label.family="Helvetica", vertex.label.font=2, vertex.label.color="black", layout=layout_nicely, preventtooverlap=T, main="Sido-Ego-Netzwerk")
+
+
+
+###########################
+
+
+# Die Variablen können auch leicht manipuliert werden, falls etwa das Gewicht noch wenig stärker visualisiert werden soll, können die Werte einfach umgeschrieben werden.
+E(h)$width <- E(h)$realtionship*3 # multipliziert die Gewicht mit dem Faktor 2, daher werden diese auch stärker visualisiert werden.
+E(h)$color="grey" #setzt die Farbe rot für Kanten
+E(h)$curved=.1 #leicht gebogenen Kanten für eine bessere Lesbarkeit.
+### nicht aktiviert
+plot(h)
+
+# Alternativ lassen sich auch Farbverläufe definieren, https://www.r-bloggers.com/color-palettes-in-r/
+col=heat.colors(2)
+V(h)$color <- col[V(h)$sex]
+plot(h)
+# Die Farbverläufe werden aber erst interessant, wenn eine Skala von mehr als drei Werten visualisiert wird.
+
+# KNOTEN-FORM ändern.
+# Wie jedes andere Attribut lässt sich auch die Form des Knotens ändern. In diesem Fall wollen wir, dass alle Raucher V(h)$smoke als Quadrat dargestellt werden.
+
+V(h)$shape = "circle"
+#definiert, dass alle Knoten als Kreis auftreten
+
+star <- V(h)[type == "2"]
+# wöhlt alle Knoten aus, die das Vertex-Attribut "2" bei $smoke gesetzt haben
+
+V(h)[star]$shape = "square"
+# weist allen Werten von Smokers den Shape "square" zu.
+
+plot(h)
+
+# EXTRA: TWO-MODE Netzwerke (bi-partite)
+# bei einem bi-partite Netzwerk haben Sie in der Regel die Rubrik "type" angelegt und mit 0 und 1 kodiert. Damit könnten Sie das Netzwerk wie folgt visualisieren (funktioniert in unserem Beispiel nicht, da wir kein bi-partite Netzwerk angelegt haben.)
+
+V(h)[V(h)$type == 1]$shape <- "square"
+V(h)[V(h)$type == 0]$shape <- "circle"
+plot(h)
+
+#Wir könnten aber ein anderes dichotomes Attribut auswählen und danach das Netzwerk strukturieren:
+
+vertex_attr(h)
+V(h)[V(h)$tatoo == 1]$shape <- "circle"
+V(h)[V(h)$tatoo == 2]$shape <- "rectangle"
+plot(h)
